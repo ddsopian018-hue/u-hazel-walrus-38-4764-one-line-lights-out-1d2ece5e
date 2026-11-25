@@ -51,14 +51,22 @@ LINE = (
 )
 
 
+def validate(line: str) -> str:
+    """Enforce the gate exactly as the sealed scorer will: UTF-8 text of
+    1..200 characters, not only white space, and a single line — a status
+    update, not a paragraph. Fail loudly here rather than ship an entry
+    that can never be judged."""
+    assert 1 <= len(line) <= 200, f"entry line is {len(line)} characters"
+    assert line.strip(), "entry line is only white space"
+    assert "\n" not in line, "entry line must be a single line"
+    assert line == line.strip(), "entry line has leading/trailing space"
+    return line
+
+
 def main() -> None:
-    # The gate only judges a line of 1..200 characters; fail loudly here
-    # rather than ship an entry that can never be judged.
-    assert 1 <= len(LINE) <= 200, f"entry line is {len(LINE)} characters"
-    assert LINE.strip(), "entry line is only white space"
     out_dir = Path(os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output")
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "entry.txt").write_text(LINE, encoding="utf-8")
+    (out_dir / "entry.txt").write_text(validate(LINE), encoding="utf-8")
 
 
 if __name__ == "__main__":
